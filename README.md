@@ -53,7 +53,7 @@ yields:
 make help            display this help
 make info            print prefix and other flags
 make all             build and install all
-make <target>        builds a target: binutils, gcc, vasm, vbcc, vlink, libv9990, libgcc, newlib
+make <target>        builds a target: binutils, gcc, vasm, vbcc, vlink, libgcc, newlib
 make clean           remove the build folder
 make clean-<target>  remove the target's build folder
 make clean-prefix    remove all content from the prefix folder
