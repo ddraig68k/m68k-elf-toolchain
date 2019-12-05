@@ -16,8 +16,8 @@ BUILD := build-$(UNAME_S)
 
 GCC_VERSION ?= $(shell cat 2>/dev/null projects/gcc/gcc/BASE-VER)
 
-BINUTILS_BRANCH := binutils-2_32-branch
-GCC_BRANCH := gcc-8-branch
+BINUTILS_BRANCH := binutils-2_33-branch
+GCC_BRANCH := gcc-9-branch
 GCC_LANGUAGES := c,c++,lto
 
 BUILD_THREADS := -j3
@@ -329,6 +329,7 @@ projects/binutils/configure:
 # =================================================
 CONFIG_GCC=--prefix=$(PREFIX_TARGET) --target=m68k-elf --enable-languages=$(GCC_LANGUAGES) \
     --enable-version-specific-runtime-libs --disable-libssp --disable-nls --disable-threads \
+	--disable-libmudflap --disable-libgomp --disable-libstdcxx-pch --with-gnu-as --with-gnu-ld \
 	--with-newlib --with-headers=$(PWD)/projects/newlib-cygwin/newlib/libc/include/ --disable-shared \
 	--src=../../projects/gcc 
 
@@ -477,7 +478,7 @@ endif
 $(BUILD)/newlib/newlib/Makefile: projects/newlib-cygwin/configure  
 	@mkdir -p $(BUILD)/newlib/newlib
 	@rsync -a $(PWD)/projects/newlib-cygwin/newlib/libc/include/ $(PREFIX_PATH)/m68k-elf/sys-include
-	$(L0)"configure newlib"$(L1) cd $(BUILD)/newlib/newlib && ../../../projects/newlib-cygwin/configure $(NEWLIB_CONFIG) $(L2)
+	$(L0)"configure newlib"$(L1) cd $(BUILD)/newlib/newlib &&  $(PWD)/projects/newlib-cygwin/configure $(NEWLIB_CONFIG) $(L2)
 
 projects/newlib-cygwin/newlib/configure: 
 	@mkdir -p projects
