@@ -17,7 +17,7 @@ BUILD := build-$(UNAME_S)
 GCC_VERSION ?= $(shell cat 2>/dev/null projects/gcc/gcc/BASE-VER)
 
 BINUTILS_BRANCH := binutils-2_33-branch
-GCC_BRANCH := gcc-9-branch
+GCC_BRANCH := releases/gcc-9
 GCC_LANGUAGES := c,c++,lto
 
 BUILD_THREADS := -j3
