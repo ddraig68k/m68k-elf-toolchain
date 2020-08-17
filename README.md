@@ -39,7 +39,7 @@ pacman -S vim git tar unzip bison texinfo gettext libtool autoconf automake gcc 
 ## Download needed source files
 
 ```
-git clone https://gitlab.ddraig68k.com/ddraig/m68k-elf-toolchain
+git clone https://github.com/SteveMoody73/m68k-elf-toolchain
 cd m68k-elf-toolchain
 make update
 ```
