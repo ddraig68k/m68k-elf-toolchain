@@ -24,10 +24,10 @@ BUILD_THREADS := -j3
 
 GIT_BINUTILS         := git://sourceware.org/git/binutils-gdb.git
 GIT_GCC              := https://github.com/gcc-mirror/gcc
-GIT_NEWLIB_CYGWIN    := git://sourceware.org/git/newlib-cygwin.git
-GIT_VASM             := https://github.com/leffmann/vasm
-GIT_VBCC             := https://github.com/bebbo/vbcc
-GIT_VLINK            := https://github.com/leffmann/vlink
+GIT_NEWLIB_CYGWIN    := https://github.com/ddraig68k/newlib-cygwin.git
+GIT_VASM             := https://github.com/ddraig68k/vasm
+GIT_VBCC             := https://github.com/ddraig68k/vbcc
+GIT_VLINK            := https://github.com/ddraig68k/vlink
 
 CFLAGS ?= -Os
 CXXFLAGS ?= $(CFLAGS)
