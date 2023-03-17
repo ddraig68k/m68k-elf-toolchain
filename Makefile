@@ -17,7 +17,7 @@ BUILD := build-$(UNAME_S)
 GCC_VERSION ?= $(shell cat 2>/dev/null projects/gcc/gcc/BASE-VER)
 
 BINUTILS_BRANCH := binutils-2_33-branch
-GCC_BRANCH := releases/gcc-9
+GCC_BRANCH := releases/gcc-10
 GCC_LANGUAGES := c,c++,lto
 
 BUILD_THREADS := -j3
@@ -328,10 +328,9 @@ projects/binutils/configure:
 # gcc
 # =================================================
 CONFIG_GCC=--prefix=$(PREFIX_TARGET) --target=m68k-elf --enable-languages=$(GCC_LANGUAGES) \
-    --enable-version-specific-runtime-libs --disable-libssp --disable-nls --disable-threads \
-	--disable-libmudflap --disable-libgomp --disable-libstdcxx-pch --with-gnu-as --with-gnu-ld \
+	--disable-libssp --disable-nls --disable-threads --disable-libmudflap --disable-libgomp  \
 	--with-newlib --with-headers=$(PWD)/projects/newlib-cygwin/newlib/libc/include/ --disable-shared \
-	--src=../../projects/gcc 
+	--disable-libquadmath --disable-libatomic --with-cpu=68000 --src=../../projects/gcc 
 
 GCC_CMD = m68k-elf-c++ m68k-elf-g++ m68k-elf-gcc-$(GCC_VERSION) m68k-elf-gcc-nm \
 	m68k-elf-gcov m68k-elf-gcov-tool m68k-elf-cpp m68k-elf-gcc m68k-elf-gcc-ar \
