@@ -2,15 +2,13 @@
 # Makefile for building m68k gcc
 # based on the amiga gcc makefile by bebbo
 # =================================================
-
 include disable_implicite_rules.mk
-
 # =================================================
 # variables
 # =================================================
 $(eval SHELL = $(shell which bash 2>/dev/null) ) 
 
-PREFIX ?= /opt/amiga
+PREFIX ?= /opt/m68k-elf
 export PATH := $(PREFIX)/bin:$(PATH)
 
 TARGET ?= m68k-elf
@@ -41,7 +39,6 @@ get_branch = $(shell grep $(1) .repos | $(SED) -e 's/[[:blank:]]\+/ /g' | cut -d
 $(foreach modu,$(modules),$(eval $(modu)_URL=$(call get_url,$(modu))))
 $(foreach modu,$(modules),$(eval $(modu)_BRANCH=$(call get_branch,$(modu))))
 
-
 CFLAGS ?= -Os
 CXXFLAGS ?= $(CFLAGS)
 CFLAGS_FOR_TARGET ?= -O2 -fomit-frame-pointer
@@ -55,7 +52,7 @@ THREADS ?= no
 # determine exe extension for cygwin
 $(eval MYMAKE = $(shell which $(MAKE) 2>/dev/null) )
 $(eval MYMAKEEXE = $(shell which "$(MYMAKE:%=%.exe)" 2>/dev/null) )
-EXEEXT=$(MYMAKEEXE:%=.exe)
+EXEEXT:=$(MYMAKEEXE:%=.exe)
 
 # Files for GMP, MPC and MPFR
 
@@ -137,16 +134,16 @@ x:
 # =================================================
 .PHONY: help
 help:
-	@echo "make help            display this help"
-	@echo "make info            print prefix and other flags"
-	@echo "make all             build and install all"
-	@echo "make min 	    build and install the minimal to use gcc"
-	@echo "make <target>        builds a target: binutils, gcc, vasm, vbcc, vlink, libgcc, newlib"
-	@echo "make clean           remove the build folder"
-	@echo "make clean-<target>	remove the target's build folder"
+	@echo "make help					display this help"
+	@echo "make info					print prefix and other flags"
+	@echo "make all 					build and install all"
+	@echo "make min 					build and install the minimal to use gcc"
+	@echo "make <target>					builds a target: binutils, gcc, vasm, vbcc, vlink, libgcc"
+	@echo "make clean					remove the build folder"
+	@echo "make clean-<target>				remove the target's build folder"
 	@echo "make drop-prefix				remove all content from the prefix folder"
-	@echo "make update          perform git pull for all targets"
-	@echo "make update-<target> perform git pull for the given target"
+	@echo "make update					perform git pull for all targets"
+	@echo "make update-<target>				perform git pull for the given target"
 	@echo "make l   					print the last log entry for each project"
 	@echo "make b   					print the branch for each project"
 	@echo "make r   					print the remote for each project"
@@ -158,8 +155,8 @@ help:
 # =================================================
 # all
 # =================================================
-.PHONY: all gcc gdb binutils vasm libgcc min
-all: gcc binutils gdb vasm
+.PHONY: all gcc binutils vasm libgcc min
+all: gcc binutils vasm libgcc
 
 min: binutils gcc libgcc
 
@@ -242,10 +239,9 @@ update-vbcc: $(PROJECTS)/vbcc/Makefile
 update-vlink: $(PROJECTS)/vlink/Makefile
 	@cd $(PROJECTS)/vlink && git pull
 
-update-newlib: projects/newlib-cygwin/newlib/configure
-	@cd projects/newlib-cygwin && git pull
+update-newlib: $(PROJECTS)/newlib-cygwin/newlib/configure
+	@cd $(PROJECTS)/newlib-cygwin && git pull
 
-ifeq ($(BUILD_TARGET),msys)
 update-gmp:
 	if [ -a $(DOWNLOAD)/$(GMPFILE) ]; \
 	then rm -rf $(PROJECTS)/$(GMP); rm -rf $(PROJECTS)/gcc/gmp; \
@@ -299,9 +295,6 @@ BINUTILS := $(patsubst %,$(PREFIX)/bin/%$(EXEEXT), $(BINUTILS_CMD))
 BINUTILS_DIR := . bfd gas ld binutils opcodes
 BINUTILSD := $(patsubst %,$(PROJECTS)/binutils/%, $(BINUTILS_DIR))
 
-ALL_GDB := all-gdb
-INSTALL_GDB := install-gdb
-
 binutils: $(BUILD)/binutils/_done
 
 $(BUILD)/binutils/_done: $(BUILD)/binutils/Makefile $(shell find 2>/dev/null $(PROJECTS)/binutils -not \( -path $(PROJECTS)/binutils/.git -prune \) -not \( -path $(PROJECTS)/binutils/gprof -prune \) -type f)
@@ -328,8 +321,8 @@ $(PROJECTS)/binutils/configure:
 # gcc
 # =================================================
 CONFIG_GCC = --prefix=$(PREFIX) --target=$(TARGET) --enable-languages=c,c++,objc,$(ADDLANG) --enable-version-specific-runtime-libs --disable-libssp --disable-nls \
-	--with-headers=$(PROJECTS)/newlib-cygwin/newlib/libc/sys/amigaos/include/ --disable-shared --enable-threads=$(THREADS) \
-	--with-stage1-ldflags="-dynamic-libgcc -dynamic-libstdc++" --with-boot-ldflags="-dynamic-libgcc -dynamic-libstdc++"	
+	--with-newlib --with-headers=$(PROJECTS)/newlib-cygwin/newlib/libc/include/ --disable-shared --enable-threads=$(THREADS) \
+	--with-cpu=68000 --with-stage1-ldflags="-dynamic-libgcc -dynamic-libstdc++" --with-boot-ldflags="-dynamic-libgcc -dynamic-libstdc++"	
 
 # FreeBSD, OSX : libs added by the command brew install gmp mpfr libmpc
 ifeq (Darwin, $(findstring Darwin, $(UNAME_S)))
@@ -376,6 +369,7 @@ endif
 $(PROJECTS)/gcc/configure:
 	@cd $(PROJECTS) &&	git clone -b $(gcc_BRANCH) --depth 16 $(gcc_URL)
 
+# =================================================
 # vasm
 # =================================================
 VASM_CMD := vasmm68k_mot
@@ -447,8 +441,6 @@ $(PROJECTS)/vlink/Makefile:
 # =================================================
 # L I B R A R I E S
 # =================================================
-
-
 # =================================================
 # gcc libs
 # =================================================
@@ -491,13 +483,27 @@ $(BUILD)/newlib/newlib/Makefile: $(PROJECTS)/newlib-cygwin/newlib/configure $(BU
 $(PROJECTS)/newlib-cygwin/newlib/configure:
 	@cd $(PROJECTS) &&	git clone -b $(newlib-cygwin_BRANCH) --depth 4  $(newlib-cygwin_URL)
 
-
-
-
-endif
-	@echo "done" >$@
-	@touch $@
-
+# =================================================
+# update repos
+# =================================================
+.PHONY: update-repos
+update-repos:
+	@for i in $(modules); do \
+		url=$$(grep $$i .repos | sed -e 's/[[:blank:]]\+/ /g' | cut -d' ' -f2); \
+		bra=$$(grep $$i .repos | sed -e 's/[[:blank:]]\+/ /g' | cut -d' ' -f3); \
+		bra=$${bra/$$'\n'} ;\
+		bra=$${bra/$$'\r'} ;\
+		if [ -e projects/$$i ]; then \
+			pushd projects/$$i; \
+			echo setting remote origin from $$(git remote get-url origin) to $$url using branch $$bra.; \
+			git remote remove origin; \
+			git remote add origin $$url; \
+			git remote set-branches origin $$bra; \
+			git pull --depth 4; \
+			git checkout $$bra; \
+			popd; \
+		fi; \
+	done
 
 # =================================================
 # info
