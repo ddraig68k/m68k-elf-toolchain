@@ -5,3 +5,6 @@ Output
 *.log
 .lock
 .state
+.vscode
+.DS_Store
+.repos*

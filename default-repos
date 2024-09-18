@@ -1,0 +1,6 @@
+binutils           git://sourceware.org/git/binutils-gdb.git		binutils-2_33-branch
+gcc                https://github.com/gcc-mirror/gcc			    releases/gcc-11
+newlib-cygwin      https://github.com/ddraig68k/newlib-cygwin.git	master
+vasm               https://github.com/ddraig68k/vasm			    master
+vbcc               https://github.com/ddraig68k/vbcc				master
+vlink              https://github.com/ddraig68k/vlink			    master
