@@ -156,7 +156,7 @@ help:
 # all
 # =================================================
 .PHONY: all gcc binutils vasm libgcc min
-all: gcc binutils vasm libgcc
+all: gcc binutils vasm libgcc newlib
 
 min: binutils gcc libgcc
 
@@ -320,9 +320,9 @@ $(PROJECTS)/binutils/configure:
 # =================================================
 # gcc
 # =================================================
-CONFIG_GCC = --prefix=$(PREFIX) --target=$(TARGET) --enable-languages=c,c++,objc,$(ADDLANG) --enable-version-specific-runtime-libs --disable-libssp --disable-nls \
-	--with-newlib --with-headers=$(PROJECTS)/newlib-cygwin/newlib/libc/include/ --disable-shared --enable-threads=$(THREADS) \
-	--with-cpu=68000 --with-stage1-ldflags="-dynamic-libgcc -dynamic-libstdc++" --with-boot-ldflags="-dynamic-libgcc -dynamic-libstdc++"	
+CONFIG_GCC = --prefix=$(PREFIX) --target=$(TARGET) --enable-languages=c,c++,$(ADDLANG) --enable-version-specific-runtime-libs --disable-libssp --disable-nls \
+	--with-newlib --with-headers=$(PROJECTS)/newlib-cygwin/newlib/libc/include/ --disable-shared --disable-threads  \
+	--disable-libquadmath --disable-libatomic --with-cpu=68000 
 
 # FreeBSD, OSX : libs added by the command brew install gmp mpfr libmpc
 ifeq (Darwin, $(findstring Darwin, $(UNAME_S)))
@@ -344,7 +344,7 @@ GCC_CMD := $(TARGET)-c++ $(TARGET)-g++ $(TARGET)-gcc-$(GCC_VERSION) $(TARGET)-gc
 	$(TARGET)-gcc-ranlib $(TARGET)-gcov-dump
 GCC := $(patsubst %,$(PREFIX)/bin/%$(EXEEXT), $(GCC_CMD))
 
-GCC_DIR := . gcc gcc/c gcc/c-family gcc/cp gcc/objc gcc/config/m68k libiberty libcpp libdecnumber
+GCC_DIR := . gcc gcc/c gcc/c-family gcc/cp gcc/config/m68k libiberty libcpp libdecnumber
 GCCD := $(patsubst %,$(PROJECTS)/gcc/%, $(GCC_DIR))
 
 gcc: $(BUILD)/gcc/_done
@@ -468,13 +468,12 @@ $(BUILD)/newlib/_done: $(BUILD)/newlib/newlib/libc.a
 
 $(BUILD)/newlib/newlib/libc.a: $(BUILD)/newlib/newlib/Makefile $(NEWLIB_FILES)
 	@rsync -a --no-group $(PROJECTS)/newlib-cygwin/newlib/libc/include/ $(PREFIX)/$(TARGET)/sys-include
-	@rsync -a --no-group $(PROJECTS)/newlib-cygwin/newlib/libc/sys/amigaos/include/stabs.h $(PREFIX)/$(TARGET)/sys-include
 	$(L0)"make newlib"$(L1) $(MAKE) -C $(BUILD)/newlib/newlib $(L2)
 	$(L0)"install newlib"$(L1) $(MAKE) -C $(BUILD)/newlib/newlib install $(L2)
 	@for x in $$(find $(PREFIX)/$(TARGET)/lib/* -name libm.a); do ln -sf $$x $${x%*m.a}__m__.a; done
 	@touch $@
 
-$(BUILD)/newlib/newlib/Makefile: $(PROJECTS)/newlib-cygwin/newlib/configure $(BUILD)/ndk-include_ndk $(BUILD)/gcc/_done
+$(BUILD)/newlib/newlib/Makefile: $(PROJECTS)/newlib-cygwin/newlib/configure $(BUILD)/gcc/_done
 	@mkdir -p $(BUILD)/newlib/newlib
 	@if [ ! -f "$(BUILD)/newlib/newlib/Makefile" ]; then \
 	$(L00)"configure newlib"$(L1) cd $(BUILD)/newlib/newlib && $(NEWLIB_CONFIG) CFLAGS="$(CFLAGS_FOR_TARGET)" CC_FOR_BUILD="$(CC)" CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" $(PROJECTS)/newlib-cygwin/newlib/configure --host=$(TARGET) --prefix=$(PREFIX) --enable-newlib-io-long-long --enable-newlib-io-c99-formats --enable-newlib-reent-small --enable-newlib-mb --enable-newlib-long-time_t $(L2) \
