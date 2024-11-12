@@ -16,8 +16,8 @@ BUILD := build-$(UNAME_S)
 
 GCC_VERSION ?= $(shell cat 2>/dev/null projects/gcc/gcc/BASE-VER)
 
-BINUTILS_BRANCH := binutils-2_33-branch
-GCC_BRANCH := releases/gcc-10
+BINUTILS_BRANCH := binutils-2_39-branch
+GCC_BRANCH := releases/gcc-13
 GCC_LANGUAGES := c,c++,lto
 
 BUILD_THREADS := -j3
@@ -291,7 +291,7 @@ status-all:
 # =================================================
 # binutils
 # =================================================
-CONFIG_BINUTILS :=--prefix=$(PREFIX_TARGET) --target=m68k-elf --disable-werror --enable-lto
+CONFIG_BINUTILS :=--prefix=$(PREFIX_TARGET) --target=m68k-elf --disable-werror --enable-lto --with-curses
 BINUTILS_CMD := m68k-elf-addr2line m68k-elf-ar m68k-elf-as m68k-elf-c++filt \
 	m68k-elf-ld m68k-elf-nm m68k-elf-objcopy m68k-elf-objdump m68k-elf-ranlib \
 	m68k-elf-readelf m68k-elf-size m68k-elf-strings m68k-elf-strip

@@ -17,7 +17,7 @@ Right now these tools are build:
 
 ### Ubuntu
 ```
-sudo apt install make git gcc g++ lhasa libgmp-dev libmpfr-dev libmpc-dev flex gettext texinfo
+sudo apt install make git gcc g++ lhasa libgmp-dev libmpfr-dev libmpc-dev flex gettext bison texinfo
 ```
 
 ### Windows with Cygwin
