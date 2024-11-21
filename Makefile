@@ -321,8 +321,8 @@ $(PROJECTS)/binutils/configure:
 # gcc
 # =================================================
 CONFIG_GCC = --prefix=$(PREFIX) --target=$(TARGET) --enable-languages=c,c++,$(ADDLANG) --enable-version-specific-runtime-libs --disable-libssp --disable-nls \
-	--with-newlib --with-headers=$(PROJECTS)/newlib-cygwin/newlib/libc/include/ --disable-shared --disable-threads  \
-	--disable-libquadmath --disable-libatomic --with-cpu=68000 
+	--with-headers=$(PROJECTS)/newlib-cygwin/newlib/libc/include/ --disable-shared --enable-threads=$(THREADS)  \
+	--with-stage1-ldflags="-dynamic-libgcc -dynamic-libstdc++" --with-boot-ldflags="-dynamic-libgcc -dynamic-libstdc++"	
 
 # FreeBSD, OSX : libs added by the command brew install gmp mpfr libmpc
 ifeq (Darwin, $(findstring Darwin, $(UNAME_S)))
