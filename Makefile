@@ -328,7 +328,8 @@ projects/binutils/configure:
 # gcc
 # =================================================
 CONFIG_GCC=--prefix=$(PREFIX_TARGET) --target=m68k-elf --enable-languages=$(GCC_LANGUAGES) \
-	--enable-version-specific-runtime-libs --disable-libssp --disable-nls --disable-threads --disable-libmudflap --disable-libgomp  \
+	--disable-libssp --disable-nls --disable-threads --disable-libmudflap --disable-libgomp  \
+	--disable-libstdcxx-pch --disable-threads --with-gnu-as --with-gnu-ld \
 	--with-newlib --with-headers=$(PWD)/projects/newlib-cygwin/newlib/libc/include/ --disable-shared \
 	--disable-libquadmath --disable-libatomic --with-cpu=68000 --src=../../projects/gcc 
 
