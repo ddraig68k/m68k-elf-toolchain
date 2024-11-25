@@ -457,9 +457,9 @@ $(BUILD)/gcc/_libgcc_done: $(shell find 2>/dev/null projects/gcc/libgcc -type f)
 # newlib
 # =================================================
 NEWLIB_FILES = $(shell find 2>/dev/null projects/newlib-cygwin/newlib -type f)
-NEWLIB_CONFIG := --target=m68k-elf --prefix=$(PREFIX_PATH) --enable-newlib-io-c99-formats --enable-newlib-reent-small \
-                 --enable-newlib-mb --disable-shared --enable-static --enable-newlib-multithread --disable-newlib-mb \
-				 --disable-newlib-atexit-alloc --enable-target-optspace --enable-fast-install
+NEWLIB_CONFIG := --target=m68k-elf --prefix=$(PREFIX_PATH) --enable-newlib-io-c99-formats --enable-newlib-reent-small --disable-malloc-debugging \
+                 --disable-shared --enable-static --enable-newlib-multithread --disable-newlib-mb --disable-newlib-supplied-syscalls \
+				 --disable-newlib-atexit-alloc --enable-target-optspace --enable-fast-install --disable-malloc-debugging 
 
 .PHONY: newlib
 newlib: $(BUILD)/newlib/_done
