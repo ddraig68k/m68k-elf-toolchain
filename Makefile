@@ -17,7 +17,7 @@ BUILD := build-$(UNAME_S)
 GCC_VERSION ?= $(shell cat 2>/dev/null projects/gcc/gcc/BASE-VER)
 
 BINUTILS_BRANCH := binutils-2_39-branch
-GCC_BRANCH := releases/gcc-13
+GCC_BRANCH := releases/gcc-9
 GCC_LANGUAGES := c,c++,lto
 
 BUILD_THREADS := -j3
@@ -328,7 +328,8 @@ projects/binutils/configure:
 # gcc
 # =================================================
 CONFIG_GCC=--prefix=$(PREFIX_TARGET) --target=m68k-elf --enable-languages=$(GCC_LANGUAGES) \
-	--enable-version-specific-runtime-libs --disable-libssp --disable-nls --disable-threads --disable-libmudflap --disable-libgomp  \
+	--disable-libssp --disable-nls --disable-threads --disable-libmudflap --disable-libgomp  \
+	--disable-libstdcxx-pch --disable-threads --with-gnu-as --with-gnu-ld \
 	--with-newlib --with-headers=$(PWD)/projects/newlib-cygwin/newlib/libc/include/ --disable-shared \
 	--disable-libquadmath --disable-libatomic --with-cpu=68000 --src=../../projects/gcc 
 
@@ -456,9 +457,9 @@ $(BUILD)/gcc/_libgcc_done: $(shell find 2>/dev/null projects/gcc/libgcc -type f)
 # newlib
 # =================================================
 NEWLIB_FILES = $(shell find 2>/dev/null projects/newlib-cygwin/newlib -type f)
-NEWLIB_CONFIG := --target=m68k-elf --prefix=$(PREFIX_PATH) --enable-newlib-io-c99-formats --enable-newlib-reent-small \
-                 --enable-newlib-mb --disable-shared --enable-static --enable-newlib-multithread --disable-newlib-mb \
-				 --disable-newlib-atexit-alloc --enable-target-optspace --enable-fast-install
+NEWLIB_CONFIG := --target=m68k-elf --prefix=$(PREFIX_PATH) --enable-newlib-io-c99-formats --enable-newlib-reent-small --disable-malloc-debugging \
+                 --disable-shared --enable-static --enable-newlib-multithread --disable-newlib-mb --disable-newlib-supplied-syscalls \
+				 --disable-newlib-atexit-alloc --enable-target-optspace --enable-fast-install --disable-malloc-debugging 
 
 .PHONY: newlib
 newlib: $(BUILD)/newlib/_done
