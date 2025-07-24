@@ -20,7 +20,7 @@ BINUTILS_BRANCH := binutils-2_39-branch
 GCC_BRANCH := releases/gcc-9
 GCC_LANGUAGES := c,c++,lto
 
-BUILD_THREADS := -j3
+BUILD_THREADS := -j5
 
 GIT_BINUTILS         := git://sourceware.org/git/binutils-gdb.git
 GIT_GCC              := https://github.com/gcc-mirror/gcc
@@ -330,8 +330,9 @@ projects/binutils/configure:
 CONFIG_GCC=--prefix=$(PREFIX_TARGET) --target=m68k-elf --enable-languages=$(GCC_LANGUAGES) \
 	--disable-libssp --disable-nls --disable-threads --disable-libmudflap --disable-libgomp  \
 	--disable-libstdcxx-pch --disable-threads --with-gnu-as --with-gnu-ld \
+	--enable-version-specific-runtime-libs -with-multilib \
 	--with-newlib --with-headers=$(PWD)/projects/newlib-cygwin/newlib/libc/include/ --disable-shared \
-	--disable-libquadmath --disable-libatomic --with-cpu=68000 --src=../../projects/gcc 
+	--disable-libquadmath --disable-libatomic --src=../../projects/gcc 
 
 GCC_CMD = m68k-elf-c++ m68k-elf-g++ m68k-elf-gcc-$(GCC_VERSION) m68k-elf-gcc-nm \
 	m68k-elf-gcov m68k-elf-gcov-tool m68k-elf-cpp m68k-elf-gcc m68k-elf-gcc-ar \
@@ -457,7 +458,7 @@ $(BUILD)/gcc/_libgcc_done: $(shell find 2>/dev/null projects/gcc/libgcc -type f)
 # newlib
 # =================================================
 NEWLIB_FILES = $(shell find 2>/dev/null projects/newlib-cygwin/newlib -type f)
-NEWLIB_CONFIG := --target=m68k-elf --prefix=$(PREFIX_PATH) --enable-newlib-io-c99-formats --enable-newlib-reent-small --disable-malloc-debugging \
+NEWLIB_CONFIG := --target=m68k-elf --prefix=$(PREFIX_PATH) --enable-newlib-io-c99-formats --enable-newlib-reent-small --enable-multilib \
                  --disable-shared --enable-static --enable-newlib-multithread --disable-newlib-mb --disable-newlib-supplied-syscalls \
 				 --disable-newlib-atexit-alloc --enable-target-optspace --enable-fast-install --disable-malloc-debugging 
 
