@@ -16,9 +16,9 @@ BUILD := build-$(UNAME_S)
 
 GCC_VERSION ?= $(shell cat 2>/dev/null projects/gcc/gcc/BASE-VER)
 
-BINUTILS_BRANCH := binutils-2_39-branch
-GCC_BRANCH := releases/gcc-9
-GCC_LANGUAGES := c,c++,lto
+BINUTILS_BRANCH := binutils-2_40-branch
+GCC_BRANCH := releases/gcc-13
+GCC_LANGUAGES := c,c++
 
 BUILD_THREADS := -j5
 
@@ -30,28 +30,12 @@ GIT_VBCC             := https://github.com/ddraig68k/vbcc
 GIT_VLINK            := https://github.com/ddraig68k/vlink
 
 CFLAGS ?= -Os
-CXXFLAGS ?= $(CFLAGS)
-CFLAGS_FOR_TARGET ?= -O2 -fomit-frame-pointer
-CXXFLAGS_FOR_TARGET ?= $(CFLAGS_FOR_TARGET) -fno-exceptions -fno-rtti
-
-E:=CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" CFLAGS_FOR_BUILD="$(CFLAGS)" CXXFLAGS_FOR_BUILD="$(CXXFLAGS)"  CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" CXXFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)"
 
 # =================================================
 # determine exe extension for cygwin
 $(eval MYMAKE = $(shell which make) )
 $(eval MYMAKEEXE = $(shell which "$(MYMAKE:%=%.exe)" 2>/dev/null) )
 EXEEXT=$(MYMAKEEXE:%=.exe)
-
-UNAME_S := $(shell uname -s)
-
-# Files for GMP, MPC and MPFR
-
-GMP = gmp-6.1.2
-GMPFILE = $(GMP).tar.bz2
-MPC = mpc-1.0.3
-MPCFILE = $(MPC).tar.gz
-MPFR = mpfr-3.1.6
-MPFRFILE = $(MPFR).tar.bz2
 
 # =================================================
 # pretty output ^^
@@ -176,26 +160,12 @@ all: gcc binutils vasm vbcc vlink libgcc newlib
 # =================================================
 # clean
 # =================================================
-ifeq ($(BUILD_TARGET),msys)
-.PHONY: clean-gmp clean-mpc clean-mpfr
-clean: clean-gmp clean-mpc clean-mpfr
-endif
-
 .PHONY: clean-prefix clean clean-gcc clean-binutils clean-vasm clean-vbcc clean-vlink clean-libgcc clean-newlib
 clean: clean-gcc clean-binutils clean-vasm clean-vbcc clean-vlink clean-newlib
 	rm -rf $(BUILD)
 
 clean-gcc:
 	rm -rf $(BUILD)/gcc
-
-clean-gmp:
-	rm -rf projects/gcc/gmp
-
-clean-mpc:
-	rm -rf projects/gcc/mpc
-
-clean-mpfr:
-	rm -rf projects/gcc/mpfr
 
 clean-libgcc:
 	rm -rf $(BUILD)/gcc/m68k-elf
@@ -227,11 +197,6 @@ clean-prefix:
 # =================================================
 # update all projects
 # =================================================
-ifeq ($(BUILD_TARGET),msys)
-.PHONY: update-gmp update-mpc update-mpfr
-update: update-gmp update-mpc update-mpfr
-endif
-
 .PHONY: update update-gcc update-binutils update-vasm update-vbcc update-vlink update-newlib
 update: update-gcc update-binutils update-vasm update-vbcc update-vlink update-newlib
 
@@ -253,35 +218,6 @@ update-vlink: projects/vlink/Makefile
 update-newlib: projects/newlib-cygwin/newlib/configure
 	@cd projects/newlib-cygwin && git pull
 
-ifeq ($(BUILD_TARGET),msys)
-update-gmp:
-	@mkdir -p download
-	@mkdir -p projects
-	if [ -a download/$(GMPFILE) ]; \
-	then rm -rf projects/$(GMP); rm -rf projects/gcc/gmp; \
-	else cd download && wget ftp://ftp.gnu.org/gnu/gmp/$(GMPFILE); \
-	fi;
-	cd projects && tar xf ../download/$(GMPFILE)
-	
-update-mpc:
-	@mkdir -p download
-	@mkdir -p projects
-	if [ -a download/$(MPCFILE) ]; \
-	then rm -rf projcts/$(MPC); rm -rf projects/gcc/mpc; \
-	else cd download && wget ftp://ftp.gnu.org/gnu/mpc/$(MPCFILE); \
-	fi;
-	cd projects && tar xf ../download/$(MPCFILE)
-
-update-mpfr:
-	@mkdir -p download
-	@mkdir -p projects
-	if [ -a download/$(MPFRFILE) ]; \
-	then rm -rf projects/$(MPFR); rm -rf projects/gcc/mpfr; \
-	else cd download && wget ftp://ftp.gnu.org/gnu/mpfr/$(MPFRFILE); \
-	fi;
-	cd projects && tar xf ../download/$(MPFRFILE)
-endif
-
 status-all:
 	GCC_VERSION=$(shell cat 2>/dev/null projects/gcc/gcc/BASE-VER)
 # =================================================
@@ -291,34 +227,23 @@ status-all:
 # =================================================
 # binutils
 # =================================================
-CONFIG_BINUTILS :=--prefix=$(PREFIX_TARGET) --target=m68k-elf --disable-werror --enable-lto --with-curses
-BINUTILS_CMD := m68k-elf-addr2line m68k-elf-ar m68k-elf-as m68k-elf-c++filt \
-	m68k-elf-ld m68k-elf-nm m68k-elf-objcopy m68k-elf-objdump m68k-elf-ranlib \
-	m68k-elf-readelf m68k-elf-size m68k-elf-strings m68k-elf-strip
-BINUTILS := $(patsubst %,$(PREFIX_PATH)/bin/%$(EXEEXT), $(BINUTILS_CMD))
-
-BINUTILS_DIR := . bfd gas ld binutils opcodes
-BINUTILSD := $(patsubst %,projects/binutils/%, $(BINUTILS_DIR))
-
-ifeq ($(findstring Darwin,$(shell uname)),)
-ALL_GDB := all-gdb
-INSTALL_GDB := install-gdb
-endif
+CONFIG_BINUTILS := 	--prefix=$(PREFIX_TARGET) \
+					--target=m68k-elf \
+					--disable-werror \
+					--disable-debug \
+                    --disable-dependency-tracking \
+                    --disable-silent-rules
 
 binutils: $(BUILD)/binutils/_done
 
-$(BUILD)/binutils/_done: $(BUILD)/binutils/Makefile $(shell find 2>/dev/null projects/binutils -not \( -path projects/binutils/.git -prune \) -not \( -path projects/binutils/gprof -prune \) -type f)
-	@touch -t 0001010000 projects/binutils/binutils/arparse.y
-	@touch -t 0001010000 projects/binutils/binutils/arlex.l
-	@touch -t 0001010000 projects/binutils/ld/ldgram.y
-	@touch -t 0001010000 projects/binutils/intl/plural.y
-	$(L0)"make binutils"$(L1)$(MAKE) $(BUILD_THREADS) -C $(BUILD)/binutils all-gas all-binutils all-ld $(ALL_GDB) $(L2)
-	$(L0)"install binutils"$(L1)$(MAKE) -C $(BUILD)/binutils install-gas install-binutils install-ld $(INSTALL_GDB) $(L2) 
+$(BUILD)/binutils/_done: 
+	$(L0)"make binutils"$(L1)$(MAKE) $(BUILD_THREADS) -C $(BUILD)/binutils $(L2)
+	$(L0)"install binutils"$(L1)$(MAKE) -C $(BUILD)/binutils install $(L2) 
 	@echo "done" >$@
 
 $(BUILD)/binutils/Makefile: projects/binutils/configure
 	@mkdir -p $(BUILD)/binutils
-	$(L0)"configure binutils"$(L1) cd $(BUILD)/binutils && $(E) $(PWD)/projects/binutils/configure $(CONFIG_BINUTILS) $(L2)
+	$(L0)"configure binutils"$(L1) cd $(BUILD)/binutils && $(PWD)/projects/binutils/configure $(CONFIG_BINUTILS) $(L2)
 	 
 projects/binutils/configure:
 	@mkdir -p projects
@@ -327,39 +252,28 @@ projects/binutils/configure:
 # =================================================
 # gcc
 # =================================================
-CONFIG_GCC=--prefix=$(PREFIX_TARGET) --target=m68k-elf --enable-languages=$(GCC_LANGUAGES) \
-	--disable-libssp --disable-nls --disable-threads --disable-libmudflap --disable-libgomp  \
-	--disable-libstdcxx-pch --disable-threads --with-gnu-as --with-gnu-ld \
-	--enable-version-specific-runtime-libs -with-multilib \
-	--with-newlib --with-headers=$(PWD)/projects/newlib-cygwin/newlib/libc/include/ --disable-shared \
-	--disable-libquadmath --disable-libatomic --src=../../projects/gcc 
+CONFIG_GCC = 	--prefix=$(PREFIX_TARGET) \
+				--target=m68k-elf
+				--enable-languages=c,c++ \
+				--disable-debug \
+				--disable-dependency-tracking \
+				--disable-silent-rules \
+				--disable-nls \
+				--with-as=$(AS_FOR_TARGET) \
+				--with-ld=$(LD_FOR_TARGET) 
 
-GCC_CMD = m68k-elf-c++ m68k-elf-g++ m68k-elf-gcc-$(GCC_VERSION) m68k-elf-gcc-nm \
-	m68k-elf-gcov m68k-elf-gcov-tool m68k-elf-cpp m68k-elf-gcc m68k-elf-gcc-ar \
-	m68k-elf-gcc-ranlib m68k-elf-gcov-dump
-GCC = $(patsubst %,$(PREFIX_PATH)/bin/%$(EXEEXT), $(GCC_CMD))
-
-GCC_DIR := . gcc gcc/c gcc/c-family gcc/cp gcc/objc gcc/config/m68k libiberty libcpp libdecnumber
-GCCD := $(patsubst %,projects/gcc/%, $(GCC_DIR))
+# --src=../../projects/gcc 
 
 gcc: $(BUILD)/gcc/_done
 
 $(BUILD)/gcc/_done: $(BUILD)/gcc/Makefile $(shell find 2>/dev/null $(GCCD) -maxdepth 1 -type f )
-	$(L0)"make gcc"$(L1) $(MAKE) $(BUILD_THREADS) -C $(BUILD)/gcc all-gcc $(L2) 
-	$(L0)"install gcc"$(L1) $(MAKE) -C $(BUILD)/gcc install-gcc $(L2) 
+	$(L0)"make gcc"$(L1) $(MAKE) $(BUILD_THREADS) -C $(BUILD)/gcc all-gcc all-target-libgcc $(L2) 
+	$(L0)"install gcc"$(L1) $(MAKE) -C $(BUILD)/gcc install-target-libgcc $(L2) 
 	@echo "done" >$@
 
 $(BUILD)/gcc/Makefile: projects/gcc/configure $(BUILD)/binutils/_done
 	@mkdir -p $(BUILD)/gcc
-ifeq ($(BUILD_TARGET),msys)
-	@mkdir -p projects/gcc/gmp
-	@mkdir -p projects/gcc/mpc
-	@mkdir -p projects/gcc/mpfr
-	@rsync -a projects/$(GMP)/* projects/gcc/gmp
-	@rsync -a projects/$(MPC)/* projects/gcc/mpc
-	@rsync -a projects/$(MPFR)/* projects/gcc/mpfr
-endif	
-	$(L0)"configure gcc"$(L1) cd $(BUILD)/gcc && $(E) $(PWD)/projects/gcc/configure $(CONFIG_GCC) $(L2) 
+	$(L0)"configure gcc"$(L1) cd $(BUILD)/gcc && $(PWD)/projects/gcc/configure $(CONFIG_GCC) $(L2) 
 
 projects/gcc/configure:
 	@mkdir -p projects
@@ -439,20 +353,6 @@ projects/vlink/Makefile:
 # =================================================
 # L I B R A R I E S
 # =================================================
-
-
-# =================================================
-# gcc libs
-# =================================================
-LIBGCCS_NAMES := libgcov.a libstdc++.a libsupc++.a
-LIBGCCS := $(patsubst %,$(PREFIX_PATH)/lib/gcc/m68k-elf/$(GCC_VERSION)/%,$(LIBGCCS_NAMES))
-
-libgcc: $(BUILD)/gcc/_libgcc_done
-
-$(BUILD)/gcc/_libgcc_done: $(shell find 2>/dev/null projects/gcc/libgcc -type f)
-	$(L0)"make libgcc"$(L1) $(MAKE) $(BUILD_THREADS) -C $(BUILD)/gcc all-target $(L2) 
-	$(L0)"install libgcc"$(L1) $(MAKE) -C $(BUILD)/gcc install-target $(L2)
-	@echo "done" >$@
 
 # =================================================
 # newlib
