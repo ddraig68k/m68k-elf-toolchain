@@ -16,11 +16,11 @@ BUILD := build-$(UNAME_S)
 
 GCC_VERSION ?= $(shell cat 2>/dev/null projects/gcc/gcc/BASE-VER)
 
-BINUTILS_BRANCH := binutils-2_39-branch
-GCC_BRANCH := releases/gcc-9
+BINUTILS_BRANCH := binutils-2_40-branch
+GCC_BRANCH := releases/gcc-13
 GCC_LANGUAGES := c,c++,lto
 
-BUILD_THREADS := -j5
+BUILD_THREADS := -j20
 
 GIT_BINUTILS         := git://sourceware.org/git/binutils-gdb.git
 GIT_GCC              := https://github.com/gcc-mirror/gcc
@@ -327,12 +327,11 @@ projects/binutils/configure:
 # =================================================
 # gcc
 # =================================================
-CONFIG_GCC=--prefix=$(PREFIX_TARGET) --target=m68k-elf --enable-languages=$(GCC_LANGUAGES) \
-	--disable-libssp --disable-nls --disable-threads --disable-libmudflap --disable-libgomp  \
-	--disable-libstdcxx-pch --disable-threads --with-gnu-as --with-gnu-ld \
-	--enable-version-specific-runtime-libs -with-multilib \
+CONFIG_GCC=--prefix=$(PREFIX_TARGET) --target=m68k-elf --with-cpu=68000 --enable-languages=$(GCC_LANGUAGES) \
+	--disable-nls --disable-threads --disable-debug --disable-dependency-tracking \
+	--with-as=$(AS_FOR_TARGET) --with-ld=$(LD_FOR_TARGET) \
 	--with-newlib --with-headers=$(PWD)/projects/newlib-cygwin/newlib/libc/include/ --disable-shared \
-	--disable-libquadmath --disable-libatomic --src=../../projects/gcc 
+	--src=../../projects/gcc 
 
 GCC_CMD = m68k-elf-c++ m68k-elf-g++ m68k-elf-gcc-$(GCC_VERSION) m68k-elf-gcc-nm \
 	m68k-elf-gcov m68k-elf-gcov-tool m68k-elf-cpp m68k-elf-gcc m68k-elf-gcc-ar \
