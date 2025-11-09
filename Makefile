@@ -53,6 +53,10 @@ MPCFILE = $(MPC).tar.gz
 MPFR = mpfr-3.1.6
 MPFRFILE = $(MPFR).tar.bz2
 
+# Windows host triple for gdb built via MinGW (for use under WSL2)
+HOST_WIN ?= x86_64-w64-mingw32
+
+
 # =================================================
 # pretty output ^^
 # =================================================
@@ -128,6 +132,8 @@ OBJCOPY_FOR_TARGET=$(PREFIX_PATH)/bin/m68k-elf-objcopy
 OBJDUMP_FOR_TARGET=$(PREFIX_PATH)/bin/m68k-elf-objdump
 RANLIB_FOR_TARGET=$(PREFIX_PATH)/bin/m68k-elf-ranlib
 
+# Separate build dir for Windows-hosted GDB
+BUILD_GDB_WIN := $(BUILD)/gdb-win
 
 UPDATE = __x=
 ANDPULL = ;__y=$$(git branch | grep '*' | cut -b3-);echo setting remote origin from $$(git remote get-url origin) to $$__x using branch $$__y;\
@@ -170,8 +176,8 @@ ifeq ($(BUILD_TARGET),msys)
 all: install-dll
 endif
 
-.PHONY: all gcc binutils vasm vbcc vlink libgcc newlib
-all: gcc binutils vasm vbcc vlink libgcc newlib
+.PHONY: all gcc binutils gdb vasm vbcc vlink libgcc newlib
+all: gcc binutils gdb vasm vbcc vlink libgcc newlib
 
 # =================================================
 # clean
@@ -323,6 +329,19 @@ $(BUILD)/binutils/Makefile: projects/binutils/configure
 projects/binutils/configure:
 	@mkdir -p projects
 	@cd projects &&	git clone -b $(BINUTILS_BRANCH) --depth 16 $(GIT_BINUTILS) binutils
+
+# =================================================
+# gdb
+# =================================================
+
+gdb: $(BUILD)/binutils/_gdb
+
+$(BUILD)/binutils/_gdb: $(BUILD)/binutils/_done
+	$(L0)"make binutils configure gdb"$(L1)$(MAKE) -C $(BUILD)/binutils configure-gdb $(L2)
+	$(L0)"make binutils gdb libs"$(L1)$(MAKE) -C $(BUILD)/binutils/gdb all-lib $(L2)
+	$(L0)"make binutils gdb"$(L1)$(MAKE) -C $(BUILD)/binutils $(ALL_GDB) $(L2)
+	$(L0)"install binutils gdb"$(L1)$(MAKE) -C $(BUILD)/binutils install-gas install-binutils install-ld $(INSTALL_GDB) $(L2)
+	@echo "done" >$@
 
 # =================================================
 # gcc
